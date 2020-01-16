@@ -16,17 +16,31 @@ module.exports = {
   locales: {
     '/': {
       lang: 'zh-CN',
-      title: '读书笔记',
+      title: 'Webpack',
       description: 'Webpack 学习笔记',
-    },
+    }
   },
   themeConfig: {
+    repo: 'kabulore/docs',
     docsDir: 'docs',
+    smoothScroll: true,
+    displayAllHeaders: true,
     locales: {
       '/': {
         lang: 'zh-CN',
         label: '简体中文',
-        lastUpdated: '上次更新'
+        editLinks: true,
+        lastUpdated: '上次更新',
+        nav: [
+          {
+            text: '配置',
+            link: '/',
+          },
+          {
+            text: '原理',
+            link: '/principle/'
+          }
+        ]
       }
     }
   }
