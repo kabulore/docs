@@ -9,7 +9,11 @@
   },
   "scripts": {
     "dev:webpack": "vuepress dev webpack/docs",
-    "build:webpack": "vuepress build webpack/docs"
+    "build:webpack": "vuepress build webpack/docs",
+    "dev:interview": "vuepress dev interview/docs",
+    "build:interview": "vuepress build interview/docs",
+    "dev:javascript": "vuepress dev javascript/docs",
+    "build:javascript": "vuepress build javascript/docs"
   },
   "repository": {
     "type": "git",
