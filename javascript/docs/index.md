@@ -1908,6 +1908,7 @@ Array.from({ length: 2 })
 // [undefined, undefined]
 Array.from({ length: 2 }, () => 'Jack')
 // ["Jack", "Jack"]
+
 // 2. 还可以将字符串转化为数组，获取字符串长度，它能正确处理各种 Unicode 字符，避免将大于 \uFFFF 的字符算作 2 个字符长度的 Bug
 Array.from(string).length
 ```
@@ -1923,6 +1924,9 @@ Array.from(string).length
 ```js
 const newArray = Array.of(1, 2, 3)
 console.log(newArray)   // [1, 2, 3]
+
+const newArray = Array.of(3)
+console.log(newArray)   // [3] 而 new Array(3) 则会生成长度为 3 的空数组
 ```
 
 - `copyWithin()`
@@ -1931,9 +1935,239 @@ console.log(newArray)   // [1, 2, 3]
 
 参数：`copyWithin(target, start = 0, end = this.length)`。
 
+  > `target`(必需)：从该位置开始替换数据。
+  >
+  > `start`(可选，默认为0)：从该位置开始读取数据，如果为负值，则倒数。
+  >
+  > `end`(可选，默认为数组长度)：如果为负值，则倒数。
+  >
+  > 注：三个参数应该都为数值，如果不是，则自动转换为数值格式。
+
 返回值：当前数组，该方法会修改当前数组。
 
 ```js
-const newArray = Array.of(1, 2, 3)
-console.log(newArray)   // [1, 2, 3]
+[1, 2, 3, 4, 5].copyWithin(0, 3)   // [4, 5, 3, 4, 5]
+
+[1, 2, 3, 4, 5].copyWithin(0, 3, 4)   // [4, 2, 3, 4, 5] 复制3号位到0号位
+
+[].copyWithin.call({ length: 5, 3: 1}, 0, 3)   // {0: 1, 3: 1, length: 5}
+
+// 对于不支持 copyWithin 方法的平台，可用下面写法替代
+[].copyWithin.call([1, 2, 3, 4, 5], 0, 3, 4)   // [4, 2, 3, 4, 5]
 ```
+
+- `find()`
+
+定义：用于找出第一个符合条件的数组成员。
+
+参数：回调函数 fn，数组成员会依次执行该函数，直到找出第一个返回值为 true 的成员。
+
+返回值：有复合条件的，则返回该成员，否则返回 undefined。
+
+```js
+[1, 4, -2, 5].find(n => n < 0)   // -2
+
+[2, 3, 10].find((item, index, array) => {
+  return item > 9
+})   // 10
+```
+
+- `findIndex()`
+
+定义：用于找出第一个符合条件的数组成员的位置。
+
+参数：回调函数 fn，数组成员会依次执行该函数，直到找出第一个返回值为 true 的成员。
+
+返回值：有复合条件的，则返回该成员的位置，否则返回 -1。
+
+```js
+[1, 4, -2, 5].findIndex(n => n < 0)   // 2
+
+[2, 3, 10].findIndex((item, index, array) => {
+  return item > 100
+})   // -1
+```
+
+**注：** `find()` 和 `findIndex()` 方法都可以发现 NaN，弥补了数组 indexOf 的不足，但需要借助 `Object.is()` 方法。
+
+```js
+[NaN].find(n => Object.is(NaN, n))   // NaN
+
+[NaN].findIndex(n => Object.is(NaN, n))   // 0
+```
+
+- `fill()`
+
+定义：用一个固定值填充一个数组中从起始索引到终止索引内的全部元素，不包括终止索引。
+
+参数：`fill(value, start = 0, end = this.length)`。
+
+返回值：修改后的数组，该方法会改变原数组。
+
+```js
+['a', 'b', 'c'].fill(2)   // [2, 2, 2]
+
+['a', 'b', 'c'].fill(2, 1, 2)   // ['a', 2, 'c']
+```
+
+- `entries() | keys() | values()`
+
+定义：与对象的方法类似，`entries()` 是对键值对的遍历，`keys()` 是对键的遍历，`values()` 是对值得遍历。
+
+返回值：一个遍历器对象，可与 for...of 循环配套使用。
+
+```js
+for (let item of ['a', 'b', 'c'].values()) {
+  console.log(item)
+}
+// "a"
+// "b"
+// "c"
+
+for (let [index, item] of ['a', 'b', 'c'].entries()) {
+  console.log(index, item)
+}
+// 0 "a"
+// 1 "b"
+// 2 "c"
+```
+
+- `includes()`
+
+定义：判断一个数组是否包含一个指定的值。
+
+参数：`includes(value, fromIndex)`。
+
+返回值：如果包含则返回 true，否则返回false。
+
+```js
+['a', 'b', 'c'].includes('b')   // true
+
+// 可以用来检测 NaN
+[1, NaN].includes(NaN)   // true
+```
+
+### Date 类型
+
+Date 类型使用自 UTC（Coordinated Universal Time, 国际协调时间）1970 年 1 月 1 日零时开始经过的毫秒数来保存日期。
+
+Date 类型保存的日期可以精确到 1970 年 1 月 1 日前后的 100000000 年。
+
+创建日期对象：
+
+```js
+const now = new Date()   // 不传参数的情况下，会返回当前日期的时间
+
+// 如果想创建特定的日期和时间，必须传入表示该日期的毫秒数
+new Date(1582523146995)
+
+// 但也可以传入指定格式日期字符串，返回指定日期的时间。之所以可以如此，是因为在后台调用了 Date.parse()
+new Date('02/02/2020')
+// 等效于
+new Date(Date.parse('02/02/2020'))
+```
+
+Date 提供了 parse() 方法来支持传入字符串返回相应日期的毫秒数
+
+```js
+Date.parse('02/02/2020')   // 1580572800000
+
+// 如果传入的字符串不能表示日期，则会返回 NaN
+Date.parse('abc')   // NaN
+```
+
+Date 还提供了 UTC() 方法来返回表示日期的毫秒数，该方法接收一次为：年，从0开始的月，日，小时（0~23），分，秒，毫秒。其中年和月为必传，其他可不传。
+
+```js
+Date.UTC(2000, 0)   // 946684800000
+
+Date.UTC(2005, 4, 5, 17, 55, 555)   // 1115316255000
+```
+
+在 ECMAScript5 中添加了 Date.now() 方法，返回调用该方法时的日期和时间的毫秒数。这通常被用来测试代码执行时间。
+
+```js
+const start = Date.now()   // 1582527636541
+// do sth.
+const end = date.now()   // 1582527673701
+```
+
+**在不支持 Date.now() 的浏览器中（所有浏览器中），可以使用 `+new Date()` 来获取当前时间戳，等价于 `Date.now()`**
+
+```js
++new Date()   // 1582527806300
+```
+
+1. **日期对象继承的方法**
+
+与其他引用类型一样，Date 类型也重写了 `toLocalString()`、`toString()`、`valueOf()` 方法，但 `toLocalString()` 和 `toString()` 方法在各个浏览器实现的都不一样，因此并无实际使用价值。
+
+`valueOf()` 方法并不返回字符串表示，而是返回该日期的毫秒表示，因此**可以使用比较操作符直接来比较日期**。
+
+```js
+new Date(2020, 2, 19) > new Date(2019, 12, 22)   // true
+```
+
+2. **日期格式化方法**
+
+将日期格式转换为字符串的方法：
+
+```js
+// 显示日期的星期、月、日、年
+new Date().toDateString()   // "Mon Feb 24 2020"
+
+// 显示时、分、秒、时区
+new Date().toTimeString()   // "17:08:33 GMT+0800 (中国标准时间)"
+
+// 显示特定地区格式的日期时间
+new Date().toLocaleDateString()   // "2020/2/24"
+
+// 显示特定地区格式的具体时间
+new Date().toLocaleTimeString()   // "下午5:11:20"
+
+// 显示完整的 UTC 日期
+new Date().toUTCString()   // "Mon, 24 Feb 2020 09:12:27 GMT"
+```
+
+**注：以上方法也因浏览器而异，所以也不实用！**
+
+3. **真正实用的获取日期信息方法**
+
+|字面量|含义|
+|:-:|:-:|
+|getTime()|返回日期的毫秒数，与 valueOf() 返回值相同|
+|setTime(毫秒数)|以毫秒数设置日期|
+|getFullYear()|获取 4 位数的年份|
+|getUTCFullYear()|获取 UTC 日期的 4 位数的年份|
+|setFullYear()|设置日期的年份。传入的必须是四位数字，如 2020|
+|setUTCFullYear()|设置 UTC 日期的年份。传入的必须是四位数字，如 2020|
+|getMonth()|获取日期中的月份，从 0 开始，即 0 为 1 月，11 为 12 月|
+|getUTCMonth()|获取 UTC 日其中的月份，从 0 开始，即 0 为 1 月，11 为 12 月|
+|setMonth()|设置日期中的月份，必须大于 0，超过 11 则增加年份|
+|setUTCMonth()|设置 UTC 日期中的月份，必须大于 0，超过 11 则增加年份|
+|getDate()|获取日期是当月的第几天（1 ~ 31），如 2 月 5 日即为 5|
+|getUTCDate()|获取 UTC 日期是当月的第几天（1 ~ 31），如 2 月 5 日即为 5|
+|setDate()|设置日期为当月的第几天，如超过该月最大天数，则增加月份|
+|setUTCDate()|设置 UTC 日期为当月的第几天，如超过该月最大天数，则增加月份|
+|getDay()|获取日期为星期几，从 0 开始，即 0 为周一，6 为周日|
+|getUTCDay()|获取 UTC 日期为星期几，从 0 开始，即 0 为周一，6 为周日|
+|getHours()|获取日期的小时数，从 0 开始，23 结束|
+|getUTCHours()|获取 UTC 日期的小时数，从 0 开始，23 结束|
+|setHours()|设置日期的小时数，超过 23 则增加天数|
+|setUTCHours()|设置 UTC 日期的小时数，超过 23 则增加天数|
+|getMinutes()|获取日期的分钟数，从 0 开始，59 结束|
+|getUTCMinutes()|获取 UTC 日期的分钟数，从 0 开始，59 结束|
+|setMinutes()|设置日期的分钟数，超过 59 则增加小时数|
+|setUTCMinutes()|设置 UTC 日期的分钟数，超过 59 则增加小时数|
+|getSeconds()|获取日期的秒数，从 0 开始，59 结束|
+|getUTCSeconds()|获取 UTC 日期的秒数，从 0 开始，59 结束|
+|setSeconds()|设置日期的秒数，超过 59 则增加分钟数|
+|setUTCSeconds()|设置 UTC 日期的秒数，超过 59 则增加分钟数|
+|getMilliseconds()|获取日期的豪秒数，从 0 开始，999 结束|
+|getUTCMilliseconds()|获取 UTC 日期的豪秒数，从 0 开始，999 结束|
+|setMilliseconds()|设置日期的豪秒数，超过 999 则增加秒数|
+|setUTCMilliseconds()|设置 UTC 日期的豪秒数，超过 999 则增加秒数|
+|getTimezoneOffset()|获取本地时间与 UTC 时间相差的分钟数|
+
+### RegExp 类型
+
