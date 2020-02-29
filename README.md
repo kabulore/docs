@@ -1,2 +1,3 @@
 # docs
-The docs of something like webpack, dart, flutter, typescript, node and so on.
+
+The docs of something what I have learned like Webpack, Dart, Flutter, Typescript, Node and so on.

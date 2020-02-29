@@ -1,0 +1,28 @@
+{
+  "name": "docs",
+  "version": "0.0.1",
+  "description": "The docs of something what I have learned like Webpack, Dart, Flutter, Typescript, Node and so on.",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "vuepress": "^1.2.0"
+  },
+  "scripts": {
+    "dev:webpack": "vuepress dev webpack/docs",
+    "build:webpack": "vuepress build webpack/docs",
+    "dev:interview": "vuepress dev interview/docs",
+    "build:interview": "vuepress build interview/docs",
+    "dev:javascript": "vuepress dev javascript/docs",
+    "build:javascript": "vuepress build javascript/docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kabulore/docs.git"
+  },
+  "author": "https://yinmu.me",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kabulore/docs/issues"
+  },
+  "homepage": "https://github.com/kabulore/docs#readme"
+}
