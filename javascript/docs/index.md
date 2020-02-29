@@ -2171,3 +2171,415 @@ new Date().toUTCString()   // "Mon, 24 Feb 2020 09:12:27 GMT"
 
 ### RegExp 类型
 
+ECMAScript 使用 RegExp 类型来支持正则表达式。
+
+1. **使用字面量方式声明（极度推荐）**
+
+```js
+const expression = / pattern / flags
+``` 
+
+其中 `pattern` 可以是任意的正则表达式，`flags` 支持以下三种模式（非必填）：
+
+- `g` (global)：表示全局匹配，会匹配字符串中所有符合正则表达式的部分。
+
+- `i` (case-insensitive)：不区分大小写，即匹配的时候会忽略大小写的区别。
+
+- `m` (multiline)：多行模式，即到达一行文本末尾时还会继续向下行查找。
+
+在正则表达式模式中，所有元字符都必须转义。正则表达式的元字符有：`( [ { \ ^ $ | ? * + . } ] )`。
+
+```js
+/at/g   // 匹配所有'at'
+
+/[bc]at/i   // 匹配第一个'bat'或'cat'，不区分大小写
+
+/.at/gi   // 匹配所有以'at'结尾的3个字符的组合，不区分大小写
+
+/\[bc\]at/i   // 匹配第一个'[bc]at'，不区分大小写
+
+/\.at/gi   // 匹配所有的'.at'，不区分大小写
+```
+
+2. **使用构造函数声明**
+
+```js
+// 构造函数接受两个参数（皆为字符串类型），第一个参数为正则表达式，第二个参数为标志字符串（非必填）
+const reg = new RegExp('[bc]at', 'i')   // 等价于 const reg = /[bc]at/i
+```
+需要注意的是，传入进去的正则表达式，因为类型为字符串，所以对元字符，要进行双重转义：
+
+```js
+// 双重转义
+const reg = new RegExp('\\[bc\\]at', 'i')   // 等价于 const reg = /\[bc\]at/i
+```
+
+> 在 ECMAScript3 中，以字面量方式创建的 RegExp 会始终共享同一个实例。但在 ES5 中已经明确规定，使用字面量必须像使用构造函数一样，每次都创建一个新的实例。
+
+3. **RegExp 实例属性（没什么用）**
+
+RegExp 的每个实例都具有下列属性：
+
+- global：布尔值，表示是否设置了 g 属性。
+
+- ignoreCase：布尔值，表示是否设置了 i 属性。
+
+- lastIndex：整数，表示开始搜索下一个匹配项的字符位置，从 0 开始。
+
+- multiline：布尔值，表示是否设置了 m 属性。
+
+- source：正则表达式的字符串表示，按照字面量形式而非构造函数中的字符串模式返回。
+
+```js
+const pattern = /\[bc\]at/i
+
+pattern.global   // false
+pattern.ignorceCase   // true
+pattern.lastIndex   // 0
+pattern.multiline   // false
+pattern.source   // '\[bc\]at'
+```
+
+4. **RegExp 实例方法**
+
+- `exec()`
+
+  该方法接收一个参数，即要被正则的字符串。
+
+  返回包含第一个匹配项信息的数组，如果没有匹配项，则返回 null。
+
+  返回的数组中包含两个额外的属性：index 和 input。index 表示匹配项在字符串中的位置，input 表示应用正则表达式的字符串。
+
+  ```js
+  const text = 'I love mom and dad and baby'
+  const pattern = /mom( and dad( and baby)?)?/gi
+  const matches = pattern.exec(text)
+  matches.index   // 7
+  matches.input   // 'I love mom and dad and baby'
+  matches[0]   // 'mom and dad and baby'
+  matches[1]   // 'and dad and baby'
+  matches[2]   // 'and baby'
+  ```
+
+- `test()`
+
+  该方法接收一个参数，即要被正则的字符串。
+
+  如果能匹配到，则返回 true；如果匹配不到，则返回 false。
+
+  ```js
+  // 判断手机号是否合法
+  const pattern = /^1[3456789]\d{9}$/
+  const phone = '16600006666'
+  if (pattern.test(phone)) {
+    console.log('输入手机号合法')
+  }
+  ```
+
+- `toLocaleString()`和`toString()`
+
+  无论用何种方法创建的正则表达式实例，这两个方法都会返回正则表达式的字面量表示。
+
+  ```js
+  const pattern = /mom( and dad( and baby)?)?/gi
+  pattern.toLocalestring()   // "/mom( and dad( and baby)?)?/gi"
+  pattern.toString()   // "/mom( and dad( and baby)?)?/gi" 
+  ```
+
+- `valueOf()`
+
+  该方法会返回正则表达式本身。
+
+  ```js
+  const pattern = /mom( and dad( and baby)?)?/gi
+  pattern.valueOf()   // /mom( and dad( and baby)?)?/gi  注意，并不是字符串类型
+  ```
+
+### Function 类型
+
+ECMAScript 中，函数实际上是对象，每个函数都是 Function 类型的实例，与其他引用类型一样具有属性和方法。
+
+**函数名实际上只是一个指向函数对象的指针**，并不会与某个函数作为绑定。
+
+函数声明的几种方式：
+
+```js
+// 函数声明
+function sum (num1, num2) {
+  return num1 + num2
+}
+
+// 函数表达式
+const sum = function (num1, num2) {
+  return num1 + num2
+}
+
+// 函数声明和函数表达式同时进行（只有沙雕才这么干，我相信你不是沙雕）
+// 此时 shadiao 是完全没有任何意义的，也访问不到，会报错未定义
+const sum = function shadiao (num1, num2) {
+  return num1 + num2
+}
+sum(1, 2)   // 3
+shadiao(1, 2)   // shadiao is not defined
+
+// 使用 Function 构造函数声明（只有另一只沙雕才这么干，我相信你不是另一只沙雕）
+// 该构造函数可以接受任意数量的参数，但会把最后一个当做函数体，其余当做函数的参数。
+// 会导致解析两次代码，效率低下
+// 但是有利于理解“函数是对象，函数名是指针”
+const sum = new Function('num1', 'num2', 'return num1 + num2')
+```
+
+由于函数名只是指针，所以一个函数可以拥有任意个名字：
+
+```js
+const sum = function (num1, num2) {
+  return num1 + num2
+}
+const add = sum
+const plus = add
+sum = null
+add(1, 2)   // 3
+plus(1, 2)   // 3
+console.log(sum)   // null
+```
+
+1. **没有重载**
+
+因为函数名只是个指针，当我们重复定义某个函数名的时候，最后定义的将会覆盖之前的，也就不可能实现其他语言的函数重载了。
+
+```js
+function add (a) {
+  return a + 100
+}
+function add (a) {
+  return a + 200
+}
+
+// 以上代码等价于
+
+var add = function (a) {
+  return a + 100
+}
+add = function (a) {
+  return a + 200
+}
+
+// 所以最后会执行 + 200 返回
+```
+
+2. **函数声明与函数表达式**
+
+函数声明与 var 声明变量一样，都会存在提升（函数提升和变量提升），而函数表达式，则会等到解析器执行到它所在的代码行才会执行。
+
+```js
+// 虽然函数声明在调用之后，但一样可以执行
+sum(1, 2)   // 3
+function sum (a, b) {
+  return a + b
+}
+
+// 如果我们采用函数表达式的形式，则完全不一样了
+console.log(sum)   // 注意，此处不会报错，因为我们是用 var 来声明的
+console.log(sum(1, 2))   // 此处会报错，此时 sum 还并未执行赋值
+var sum = function (a, b) {
+  return a + b
+}
+```
+
+除了函数提升所带来的的不同，其余方面，两种方式没有任何不同。
+
+3. **把函数作为值**
+
+函数不仅可以当做参数通过一个函数传入到另一个函数，也可以当做结果来返回。
+
+```js
+// 将函数做为参数传递
+function callFunction (fn, arg) {
+  retun fn(arg)
+}
+function add (a) {
+  return a + 10
+}
+callFunction(add, 22)   // 32
+
+// 将函数作为返回值来使用（经常作为面试题）
+// 我们来实现一个 fn(1)(2)(3) 得到 1 + 2 + 3 = 6 的结果
+function fn (a) {
+  return function (b) {
+    return function (c) {
+      return a + b + c
+    }
+  }
+}
+fn(1)(2)(3)   // 6
+```
+
+4. **函数内部属性**
+
+在函数内部，有两个特殊的对象：`arguments` 和 `this`，另外还有一个属性叫 `caller`。
+
+- `arguments`
+
+  `arguments` 是一个类数组对象，包含传入函数的所有参数。同时它还有一个 `callee` 的属性，该属性是一个指针，指向拥有这个 `arguments` 对象的函数。
+
+  > 严格模式下调用 arguments.callee 会报错。严格模式下调用 arguments.caller 会报错，非严格模式下会始终返回 undefined。
+
+  ```js
+  // 实现阶乘函数解耦
+  function factorial (num) {
+    if (num <= 1) return 1
+    return num * factorial(num - 1)   // 递归
+  }
+  
+  // 此时如果函数名更改了，那内部代码就需要相应更改，可以使用 arguments.callee 来实现解耦
+  function factorial (num) {
+    if (num <= 1) return 1
+    return num * arguments.callee(num - 1)   // arguments.callee 指向该函数本身
+  }
+  ```
+
+- `this`
+
+  **`this` 永远指向函数执行的环境对象。当在全局作用域调用函数的时候，this 指向 window。**
+
+  ```js
+  function fn () {
+    console.log(this)   // window
+  }
+
+  const obj = {
+    cb: function () {
+      console.log(this)   // obj
+    }
+  }
+  ```
+
+- `caller`
+
+  ES5 新增，保存调用当前函数的函数的引用。如果是在全局作用域中调用或者并没有函数调用该函数，则值为 null。
+
+  > 严格模式下，不能为函数的 caller 属性赋值，否则报错。
+
+  ```js
+  function fn () {
+    console.log(this)   // window
+  }
+
+  fn.caller   // null
+
+  const obj = {
+    cb: function () {
+      console.log(this)   // obj
+      console.log(obj.cb.caller)   // null
+    }
+  }
+  obj.cb.caller   // null
+
+  // 此时我们在下面的函数中调用 obj.cb
+  function cbObj () {
+    obj.cb()
+  }
+  // 执行结果
+  obj   // 对应 console.log(this)
+  cbObj   // 对应 console.log(obj.cb.caller)
+  ```
+
+5. **函数属性和方法**
+
+因为函数就是对象，所以函数也有属性和方法。
+
+每个函数都包含两个属性：`length` 和 `prototype`。
+
+- `length`
+
+  函数的 length 属性表示的是该函数参数的个数。
+
+  ```js
+  function sum (num1, num2) {
+    console.log(this.length)   // 0 注意，并不是说函数内部 this 的 length
+    return num1 + num2
+  }
+
+  sum.length   // 2 是函数名.length
+  ```
+
+- `prototype`（具体到后面原型的时候再探究）
+
+  prototype 用来保存引用类型实例方法的真正所在。在创建自定义引用类型和实现继承的时候，会很有用。
+
+  > prototype 是不可枚举的，所以 for-in 无法发现。
+
+此处我们重点讲一下函数改变 this 指向的方法：`call()`，`apply()` 和 `bind()`。
+
+- `call()` 和 `apply()`
+
+  这两个方法只有在传参的形式上有所不同，其余作用都一样。
+
+  `apply()` 方法接收两个参数：第一个为运行函数的作用域，第二个为运行函数的参数数组，也可以是 arguments 对象。
+
+  `call()` 方法则接收任意个参数：第一个为运行函数的作用域，后面的为运行函数的参数依次传入。
+
+  ```js
+  function sum (num1, num2) {
+    return num1 + num2
+  }
+
+  // apply
+  function applySum1 (num1, num2) {
+    return sum.apply(this, arguments)
+  }
+  function applySum2 (num1, num2) {
+    return sum.apply(this, [num1, num2])
+  }
+
+  // 等价于 call
+  function callSum (num1, num2) {
+    return sum.call(this, num1, num2)
+  }
+  ```
+
+- `bind()`
+
+  `bind()` 与 `call()` 和 `apply()` 最大的区别在于：前者绑定 this 指向之后，并不会立即执行该函数，而是需要再执行；而后两者绑定 this 指向的时候，函数就自动执行了。而传参方式与 call() 相同
+
+  ```js
+  window.color = 'red'
+
+  const o = {
+    color: 'blue',
+    name: 'ym'
+  }
+
+  function showColor (name) {
+    console.log(this.color)
+    console.log(name)
+  }
+
+  showColor()   // 'red'  undefined
+
+  showColor.call(o, 'yinmu')   // 'blue'  'yinmu'
+
+  showColor.apply(o, ['yinmu'])   // 'blue'  'yinmu'
+
+  showColor.bind(o, 'yinmu')   // 注意，此时不会有任何输出，showColor 函数不会执行！
+
+  showColor.bind(o, 'yinmu')()   // 'blue'  'yinmu'  必须手动执行下才行。
+  ```
+
+**注意：在严格模式下，如果没指定环境对象而调用函数，则 this 值不是 window 而是 undefined。除非明确用 apply() 或 call() 或 bind() 方法来修改 this 指向。**
+
+```js
+function fn (){
+  console.log(this)
+}
+fn()   // 非严格模式，此时打印 window
+
+'use strict'
+function fn (){
+  console.log(this)
+}
+fn()   // 严格模式，此时打印 undefined
+```
+
+6. **基本包装类型**
+
