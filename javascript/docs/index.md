@@ -2581,5 +2581,197 @@ function fn (){
 fn()   // 严格模式，此时打印 undefined
 ```
 
-6. **基本包装类型**
+### 基本包装类型
 
+为了便于操作基本类型值，ECMAScript 还提供了 3 种特殊的引用类型：Boolean、Number 和 String。
+
+实际上解析器每当读取一个基本类型值的时候，会处于一种读取模式，访问到基本数据类型时，后台就会创建一个对应的基本包装类型的对象，从而让我们能够使用一些方法来操作这些数据。
+
+```js
+// 读取到 s1 的值为字符串
+let s1 = 'yinmu'
+// 解析器自动执行为
+let s1 = new String('yinmu')   // 1）创建 String 类型的一个实例
+let s2 = s1.substring(2)   // 2）在实例上调用指定的方法
+s1 = null   // 3）销毁这个实例
+```
+
+**引用类型与基本包装类型的主要区别就是对象的生存期。**自动创建的基本包装类型对象，只存在于代码执行瞬间，然后立即被销毁。所以我们无法为基本类型值添加属性和方法。
+
+```js
+let s1 = 'yinmu'
+s1.color = 'red'
+console.log(s1.color)   // undefined
+```
+
+尽量永远不要手动显式创建基本包装类型对象，很容易造成误解。对基本包装类型的实例调用 typeof 会返回 'object'，而所有的基本包装类型在转换为布尔值时都为 true，因为它是一个对象。
+
+```js
+let value = 25
+let number = Number(25)   // 这是转型函数！！！！
+console.log(typeof number)   // 'number' 
+
+let obj = new Number(25)
+console.log(typeof obj)   // 'object'
+```
+
+1. **Boolean 类型**
+
+```js
+let booleanObject = new Boolean(true)
+```
+
+永远不要使用 Boolean 对象！
+
+2. **Number 类型**
+
+```js
+let numberObject = new Number(10)
+```
+
+**方法：**
+
+- `toString()`
+
+  ```js
+  let num = 10
+  // 数字的 toString() 方法可传入一个表示基数的参数，来返回指定进制的字符串形式
+  num.toString()   // '10'
+  num.toString(2)   // '1010'
+  num.toString(8)   // '12'
+  num.toString(10)   // '10'
+  num.toString(16)   // 'a'
+  ```
+
+- `toFixed()`
+
+  返回指定小数位的数值的字符串表示（四舍五入）。
+
+  ```js
+  let num = 10
+  num.toFixed(2)   // '10.00'
+  ```
+
+  > 以标准来讲，toFixed() 可以表示带有 0 到 20 小数位的数值，当然，不同浏览器可能有不同的执行。
+
+- `toExponential()`
+
+  返回指定数值的指数表示法（e 表示法），以字符串的形式。
+
+  ```js
+  let num = 10
+  num.toExponential(1)   // '1.0e+1'
+  ```
+
+- `toPrecision()`
+
+  该方法可能会返回固定大小的格式，也可能返回指数格式。该方法接受一个参数，用来表示数值的所有数字的位数（不包括指数部分）
+  
+  ```js
+  let num = 99
+  num.toPrecision(1)   // '1e+2'  因为 1 位数无法准确表示99，所以向上舍入，变为 100
+  num.toPrecision(2)   // '99'
+  num.toPrecision(3)   // '99.0'
+  ```
+
+  > 以标准来讲，toPrecision() 可以表示带有 1 到 21 小数位的数值，当然，不同浏览器可能有不同的执行。
+
+同样不建议使用 Number 对象！
+
+3. **String 类型**
+
+```js
+let stringObject = new String('hello world')
+```
+
+**属性：**
+
+String 类型的每个实例都有一个 length 属性，表示字符串中包含多少个字符（空格也算，双字节字符，像汉字，也会算作 1 个长度）。
+
+```js
+'hello   world'.length   // 13 因为含有3个空格
+'name 尹慕'.length   // 7
+```
+
+**方法：**
+
+- `charAt()、charCodeAt()、fromCharCode() 以及 方括号访问法`
+
+  `charAt()`：接受一个字符位置参数，基于 0 开始，以单字符字符串的形式返回给定位置的字符。
+
+  ```js
+  'hello world'.charAt(1)   // 'e'
+  ```
+
+  `charCodeAt()`：接受一个字符位置参数，基于 0 开始，返回给定位置的字符的字符编码。
+
+  ```js
+  'hello world'.charCodeAt(1)   // 101 （number 类型）
+  ```
+
+  `fromCharCode()`：接受若干个字符编码，返回给定编码的字符组成的字符串。
+
+  ```js
+  String.fromCharCode(104, 101, 108, 108, 111)   // 'hello'
+  ```
+
+  方括号访问法：ES5 新增，给定下标基数，以单字符字符串的形式返回给定位置的字符。
+
+  > IE7 及更早版本会返回 undefined，其他都能完美支持。
+
+  ```js
+  'hello world'[1]   // 'e'
+  ```
+
+- `concat()`
+
+  该方法用来将若干个字符串拼接起来，返回拼接后的新字符串，并不会改变原字符串。
+
+  ```js
+  'hello '.concat('world', '!')   // 'hello world!'
+  ```
+
+  **注：更为常用的是 `+` 操作符，简单方便！**
+
+- `slice()、substr() 以及 substring()`
+
+  这三个方法都是接收一个或两个位置基数参数，返回截取的新字符串，不会改变原字符串。
+
+  1）对于只传递一个参数，且值为正的情况下，三个方法返回值一样，表示截取从该基数位置到字符串结束。
+
+  ```js
+  'hello world'.slice(3)   // 'lo world'
+  'hello world'.substr(3)   // 'lo world'
+  'hello world'.substring(3)   // 'lo world'
+  ```
+
+  2）对于传递两个参数，且值都为正的情况下：`slice()` 和 `substring()` 中第一个参数表示起始位置，第二个参数表示结束位置（不包含此结束位置）；`substr()` 第一个参数表示起始位置，第二个参数表示要截取的长度。
+
+  ```js
+  'hello world'.slice(3, 7)   // 'lo w' 截取的位置基数从 3 到 6 的部分
+  'hello world'.substr(3, 7)   // 'lo worl'  从基数位置 3 开始，截取向后数长度为 7 的部分
+  'hello world'.substring(3, 7)   // 'lo w' 截取的位置基数从 3 到 6 的部分
+  ```
+
+  3）对于传递的参数有负数的情况：`slice()` 会将传入的负值与字符串长度相加；`substr()` 如果第一个参数为负数，则加上字符串长度，如果第二个参数为负数，则当做 0 来处理；`substring()` 会把所有的负值都当做 0 来处理。
+
+  ```js
+  'hello world'.slice(-3)   // 'rld' -3 转换为 8，截取的位置基数从 8 到结束的部分
+  'hello world'.slice(3, -7)   // 'l' -7 转换为 4，截取的位置基数从 3 到 3 的部分
+  'hello world'.slice(-3, 7)   // '' -3 转换为 8，8~7，起始位置大于了结束位置，直接返回空字符串
+  'hello world'.slice(-3, -7)   // '' -3 转换为 8，-7 转换为 4，8~4，起始位置大于了结束位置，直接返回空字符串
+
+  'hello world'.substr(-3)   // 'rld'  -3 转换为 8（11 + -3 = 8）
+  'hello world'.substr(3, -7)   // ''  -7 转换为 0 ，长度为 0 ，返回空字符串
+  'hello world'.substr(-3, 7)   // 'rld'  -3 转换为 8 ，长度为 7 ，超出范围则截取到字符串结束
+  'hello world'.substr(-3, -7)   // ''  -3 转换为 8，-7 转换为 0 ，长度为 0 ，返回空字符串
+
+  'hello world'.substring(-3)   // 'hello world' -3 被当做 0 处理
+  'hello world'.substring(3, -7)   // 'hel' -7 被当做 0 处理，变成了 3~0 ，该方法会将较大的数作为结束，所以也就是截取的位置基数从 0 到 2 的部分
+  'hello world'.substring(-3, 7)   // 'hello w' -3 被当做 0 处理，截取的位置基数从 0 到 6 的部分
+  'hello world'.substring(-3, -7)   // '' 都被当做 0 处理，所以返回空字符串
+  ```
+
+  > IE8 及之前的版本，在处理 substr() 传入负值的情况时，会返回原字符串。
+
+- `indexOf() 以及 lastIndexOf()`
