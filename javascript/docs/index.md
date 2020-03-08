@@ -2775,3 +2775,347 @@ String 类型的每个实例都有一个 length 属性，表示字符串中包�
   > IE8 及之前的版本，在处理 substr() 传入负值的情况时，会返回原字符串。
 
 - `indexOf() 以及 lastIndexOf()`
+
+  这两个方法都是从一个字符串中搜索给定子字符串，返回该子字符串位置，如果没有找到，返回 -1。
+  
+  区别在于 `indexOf()` 是从开头向后查找，`lastIndexOf()` 是从结尾向前查找。
+
+  该方法都可以接收第二个参数，表示从哪个基数位置开始查找。
+
+  ```js
+  'hello world'.indexOf('o')   // 4
+  'hello world'.lastIndexOf('o')   // 7 从后向前查找，找到的是第二个 o 所在的位置
+
+  'hello world'.indexOf('o', 6)   // 7 从位置 6 开始向后查找，找到的是第二个 o 所在的位置
+  'hello world'.lastIndexOf('o', 6)   // 4 从位置 6 开始向前查找，找到的是第一个 o 所在的位置
+  ```
+
+  可以通过改变第二个参数，循环调用 `indexOf()` 或 `lastIndexOf()` 实现查找所有匹配字符串所出现的位置：
+
+  ```js
+  const str = 'my name is yinmu'
+  let position = []
+  let pos = str.indexOf('m')
+
+  while (pos > -1) {
+    position.push(pos)
+    pos = str.indexOf('m', pos + 1)
+  }
+
+  console.log(position.join(','))   // '0,5,14'
+  ```
+
+- `trim()`
+
+  ES5 新增方法，该方法会创建一个字符串的副本，删除前置及后缀的所有空格，然后返回结果。该方法不会改变原始字符串。
+
+  ```js
+  let str1 = '  hello world '
+  let str2 = str1.trim()
+  str1   // '  hello world '
+  str2   // 'hello world'
+  ```
+
+  > 支持该方法的浏览器有 IE9+、Firefox 3.5+、Safari 5+、Opera 10.5+ 以及 Chrome。此外 Firefox 3.5+、Safari 5+ 以及 Chrome 8+ 还支持非标准的 `trimLeft()` 和 `trimRight()` 方法。
+
+- `toLowerCase()、toLocaleLowerCase()、toUpperCase()、toLocaleUpperCase()`
+
+  这些方法都是用来改变字符串大小写且并不会改变原字符串。
+
+- `match()`
+
+  在字符串上调用此方法与调用 RegExp 类型的 `exec()` 方法本质上一致。
+
+  该方法只接受一个参数，要么是正则表达式，要么是 RegExp 对象，返回一个捕获组。
+
+- `search()`
+
+  该方法只接受一个参数，要么是正则表达式，要么是 RegExp 对象，返回字符串中第一个匹配项的索引，如果没有匹配项，则返回 -1。
+
+  该方法只能从开头向后查找。
+
+- `replace()`
+
+  该方法用来替换字符串中的某段子字符串，并不会改变原字符串。
+
+  接受两个参数，第一个参数可以是正则表达式或字符串，第二个参数可以是一个字符串或者函数。
+
+  1）如果第一个参数是字符串，那么只会替换第一个子字符串，如果想替换全部，就需要用正则表达式，且指定 g 全局标识。
+
+  ```js
+  let str = 'cat,bat,sat,fat'
+  str.replace('at', 'hh')   // "chh,bat,sat,fat"
+  str   // "cat,bat,sat,fat"  原字符串并没有被改变，只是拷贝了一个副本
+  str.replace(/at/g, 'hh')   // "chh,bhh,shh,fhh"
+  ```
+
+  2）如果第二个参数是字符串，可以用一些特殊字符，将正则表达式操作得到的值插入到结果字符中
+
+  |字符序列|替换文本|
+  |:-:|:-:|
+  |$$|$|
+  |$&|匹配整个模式的子字符串。与 RegExp.lastMatch 的值相同|
+  |$'|匹配子字符串之前的子字符串。与 RegExp.leftContext 的值相同|
+  |$`|匹配子字符串之后的子字符串。与 RegExp.rightContext 的值相同|
+  |$n|匹配第 n 个捕获组的子字符串，其中 n 等于 0~9。如果正则表达式中没有定义捕获组，则使用空字符串|
+  |$nn|匹配第 nn 个捕获组的子字符串，其中 nn 等于 01~99。如果正则表达式中没有定义捕获组，则使用空字符串|
+
+  ```js
+  let str = 'cat,bat,sat,fat'
+  str.replace(/(.at)/g, 'word $1')   // "word cat,word bat,word sat,word fat"
+  ```
+
+  3）如果第二个参数是函数，在只有一个匹配项的情况下（即第一个参数为字符串），会向这个函数传递三个参数：模式的匹配项、模式匹配项在字符串中的位置、原始字符串。如果在第一个参数中定义了多个捕获组的情况下，传递给函数的参数依次为：模式的匹配项、第一个捕获组的匹配项，第二个捕获组的匹配项...、最后两个参数依然是模式的匹配项在字符串中的位置和原始字符串。
+
+  ```js
+  function htmlEscape (text) {
+    return text.replace(/[<>"&]/g, function (match, pos, originalText) {
+      switch (match) {
+        case '<':
+          return '&lt;';
+        case '>':
+          return '&gt;';
+        case '&':
+          return '&amp;';
+        case '\"':
+          return '&quot;';
+      }
+    })
+  }
+
+  htmlEscape('<p class=\"greeting\">Hello World!</p>')   // "&lt;p class=&quot;greeting&quot;&gt;Hello World!&lt;/p&gt;"
+  ```
+
+- `split()`
+
+  该方法可以用指定的分隔符来将一个字符串分割成多个子字符串，并将结果放在数组中返回。
+
+  该方法第一个参数可以是字符串，也可以是正则表达式。第二个参数用来指定数组的大小，可以确保返回的数组不会超过既定大小。
+
+  ```js
+  let colors = "red,blue,green,yellow"
+  colors.split(',')   // ["red", "blue", "green", "yellow"]
+  colors.split(',' 2)   // ["red", "blue"]
+  colors.split(/[^\,]+/)   // ["", ",", ",", ",", ""]
+  ```
+
+- `localeCompare()`
+
+  **不好用，不如直接用比较操作符（> = <）来比较**
+
+  该方法用来比较两个字符串，根据以下情况做出返回值：
+
+  1）如果要比较的字符串在字母表中应该排在被比较的字符串参数之前，则返回一个负数（多数情况为 -1）。
+
+  2）如果要比较的字符串等于被比较的字符串参数，则返回 0 。
+
+  3）如果要比较的字符串在字母表中应该排在被比较的字符串参数之后，则返回一个正数（多数情况为 1）。
+
+  ```js
+  'yin'.localeCompare('zi')   // -1
+  'yin'.localeCompare('yin')   // 0
+  'yin'.localeCompare('mu')   // 1
+  ```
+
+- `HTML 方法`
+
+  **尽量不要用，因为无法表达语义且很多标签已经废弃了，了解即可。**
+
+  以 js 代码的形式生成字符串格式的 html 标签。
+
+  ```js
+  'y'.anchor('z')   // "<a name="z">y</a>"
+  'y'.big()   // "<big>y</big>"
+  'y'.bold()   // "<bold>y</bold>"
+  'y'.fixed()   // "<tt>y</tt>"
+  'y'.fontcolor('#fff')   // "<font color="#fff">y</font>"
+  'y'.fontsize('18px')   // "<font size="18px">y</font>"
+  'y'.italics()   // "<i>y</i>"
+  'y'.link('http://yinmu.me')   // "<a href="http://yinmu.me">y</a>"
+  'y'.small()   // "<small>y</small>"
+  'y'.strike()   // "<strike>y</strike>"
+  'y'.sub()   // "<sub>y</sub>"
+  'y'.sup()   // "<sup>y</sup>"
+  ```
+
+### 单体内置对象
+
+指的是不必显示的实例化的对象，如 Object、Array、String。
+
+这里重点讲解另外两种：Global 和 Math。
+
+1. **Global 对象**
+
+Global 对象可以说是 ECMAScript 中最特别的一个对象，因为不管怎么看，它都是不存在的。可以认为，不属于任何其他对象的属性和方法，都是它的属性和方法，所有全局作用域中定义的属性和方法，都是 Global 对象的属性。例如：`isNaN()`，`isFinite()`，`parseInt()` 和 `parseFloat()` 等。
+
+在这里，我们将讲解一些其他的全局方法：
+
+- `encodeURI()、encodeURIComponent()、decodeURI()、decodeURIComponent()`
+
+  这四个方法都是用来处理 URI 编码和解码的。
+
+  `encodeURI()` 主要用于整个 URI（例如：https://yinmu.me/docs/a b.html?id=1），它不会对其中的标准字符如冒号、斜杠、问号、井字号等都进行编码。
+  
+  `encodeURIComponent()` 主要用于对 URI 中的某一段进行编码，且会对它发现的任何非标准字符都进行编码。
+
+  ```js
+  encodeURI('https://yinmu.me/docs/a b.html?id=1')
+  // "https://yinmu.me/docs/a%20b.html?id=1"  只对空格进行了编码
+
+  encodeURIComponent('https://yinmu.me/docs/a b.html?id=1')
+  // "https%3A%2F%2Fyinmu.me%2Fdocs%2Fa%20b.html%3Fid%3D1"  将所有的都进行了编码
+  ```
+
+  **实际项目中我们通常使用的是 `encodeURIComponent()`，只对 URI 后面的某些参数进行编码。**
+
+  `decodeURI()` 只能解码 `encodeURI()` 进行的编码。
+
+  `decodeURIComponent()` 可以对任何编码的都进行解码。
+
+  > 这四个方法是用来替代 ES3 中的已经被废弃的 `escape()` 和 `unescape()` 的。
+
+- `eval()`
+
+  `eval()` 是整个 ECMAScript 语言中最强大的一个方法。它只接收一个参数，即要执行的 js 代码（字符串格式）。
+
+  在 `eval()` 中创建的任何变量或函数都不存在提升，因为在解析代码的时候，他们只是一个字符串，只有当真正执行的时候，才会被插入到当前代码位置。但是 `eval()` 中的代码字符串可以引用外部所声明的变量或函数。
+
+  ```js
+  eval('function fn () { console.log(1) }')
+  fn()   // 1
+  ```
+
+  **注：在严格模式下，在外部访问不到 eval() 中创建的任何变量或函数，且为 eval 赋值也会报错**
+
+  ```js
+  'use strict'
+
+  eval('let a = 1')
+  console.log(a)   // a is not defined
+
+  eval = 'hello'   // Unexpected eval or arguments in strict mode
+  ```
+
+  > 因为 `eval()` 及其强大，所以在使用的时候必须谨慎，可能会有恶意用户输入危险代码（即代码注入）。
+
+- `Global 对象的属性`
+
+  |属性|说明|
+  |:-:|:-:|
+  |undefined|特殊值undefined|
+  |NaN|特殊值NaN|
+  |Infinity|特殊值Infinity|
+  |Object|构造函数Object|
+  |Array|构造函数Array|
+  |Function|构造函数Function|
+  |Boolean|构造函数Boolean|
+  |String|构造函数String|
+  |Number|构造函数Number|
+  |Date|构造函数Date|
+  |RegExp|构造函数RegExp|
+  |Error|构造函数Error|
+  |EvalError|构造函数EvalError|
+  |RangeError|构造函数RangeError|
+  |ReferenceError|构造函数ReferenceError|
+  |SyntaxError|构造函数SyntaxError|
+  |TypeError|构造函数TypeError|
+  |URIError|构造函数URIError|
+
+- `window 对象`
+
+  Web 浏览器将 Global 这个全局对象作为 window 对象的一部分加以实现，因此全局作用域中声明的所有变量和函数，都成了 window 对象的属性。
+
+2. **Math 对象**
+
+与我们在 JavaScript 中直接编写计算功能相比，Math 对象所提供的计算功能执行起来要快得多。
+
+- `Math 对象属性`
+
+  Math 对象包含的属性大都是数据计算中可能会用到的一些特殊值。
+
+  |属性|说明|
+  |:-:|:-:|
+  |Math.E|自然对数的底数，即常量e的值|
+  |Math.LN10|10的自然对数|
+  |Math.LN2|2的自然对数|
+  |Math.LOG2E|以2为底e的对数|
+  |Math.LOG10E|以10为底e的对数|
+  |Math.PI|π的值|
+  |Math.SQRT1_2|1/2的平方根（即2的平方根的倒数）|
+  |Math.SQRT2|2的平方根|
+
+- `min() 和 max()`
+
+  两个方法都可以接收任意多的数值参数，来取出其中的最大值或最小值。
+
+  ```js
+  Math.min(3, 54, 36, 102)   // 3
+  Math.max(3, 54, 36, 102)   // 102
+  ```
+
+  **此处有一个巧妙的方法，可以用来获取数组中数值的最大值和最小值：**
+
+  ```js
+  Math.max.apply(Math, [2, 5, 102, 44, 56])   // 102
+  Math.min.apply(Math, [2, 5, 102, 44, 56])   // 2
+  ```
+
+- `ceil()、floor()、round()`
+
+  这三个方法是用来对小数位进行舍入的方法。
+
+  `Math.ceil()`执行向上舍入；`Math.floor()`执行向下舍入；`Math.round()`执行四舍五入。
+
+- `random()`
+
+  `Math.random()`返回大于等于 0 小于 1 的一个随机数。
+
+  套用下面的公式，可以从某个整数范围内随机选择一个值：
+
+  **值 = math.floor(Math.random() * 可能值的总数 + 第一个可能的值)**
+
+  举个例子：
+
+  ```js
+  // 假设要获取 1-10 之间的随机一个整数
+  const num = Math.floor(Math.random() * 10 + 1)
+
+  // 假设要获取 2-9 之间的随机一个整数
+  const num = Math.floor(Math.random() * 9 + 2)
+  ```
+
+  我们可以封装成一个固定的方法，来获取指定范围内的随机整数：
+
+  ```js
+  function selectFrom (lowerValue, upperValue) {
+    const total = upperValue - lowerValue + 1
+    return Math.floor(Math.random() * total + lowerValue)
+  }
+
+  selectFrom(2, 10)
+
+  // 也可以从数组中随机取出一项
+  const colors = ['red', 'yellow', 'gray', 'black', 'white', 'blue']
+  const selectColor = colors[selectFrom(0, colors.length - 1)]
+  ```
+
+- `其他一些计算方法`
+
+  |方法|说明|
+  |:-:|:-:|
+  |Math.abs(num)|返回num的绝对值|
+  |Math.exp(num)|返回Math.E的num次幂|
+  |Math.log(num)|返回num的自然对数|
+  |Math.pow(num, power)|返回num的power次幂|
+  |Math.sqrt(num)|返回num的平方根|
+  |Math.acos(x)|返回x的反余弦值|
+  |Math.asin(x)|返回x的反正弦值|
+  |Math.atan(x)|返回x的反正切值|
+  |Math.atan2(y,x)|返回y/x的反正切值|
+  |Math.cos(x)|返回x的余弦值|
+  |Math.sin(x)|返回x的正弦值|
+  |Math.tan(x)|返回x的正切值|
+
+  > 这些方法在不同的实现中可能会有不同的精度。
+
+##  第 6 章：面向对象的程序设计
