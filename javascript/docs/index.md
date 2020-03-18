@@ -3477,7 +3477,7 @@ console.log(xiaohua instanceof Object)   // true
 
 3. **原型模式**
 
-我们创建的每个**函数（并非对象）**都有一个 `prototype`（原型）属性，这个属性是一个指针，指向一个对象，而这个对象的用途是包含可以由特定类型的所有实例共享的属性和方法。也就是说，prototype 就是通过调用构造函数而创建的那个实例对象的原型对象。
+我们创建的 **每个函数(并非对象)** 都有一个 `prototype`（原型）属性，这个属性是一个指针，指向一个对象，而这个对象的用途是包含可以由特定类型的所有实例共享的属性和方法。也就是说，prototype 就是通过调用构造函数而创建的那个实例对象的原型对象。
 
 使用原型模式的好处是可以让所有的对象实例共享它们包含的属性和方法，也就是说，不必在构造函数中定义对象实例的信息，而是可以将这些信息直接添加到原型对象中。
 
@@ -3503,7 +3503,7 @@ console.log(person1.sayName === person2.sayName)   // true
 
 - **理解原型对象**
 
-  **无论什么时候，只要创建了一个新函数，就会根据特定的规则为该函数创建一个 prototype 属性，这个属性的值（对象）就是函数的原型对象。在默认情况下，所有原型对象都会自动获得一个 constructor (构造函数)属性，这个属性是一个指向 prototype 属性所在的函数的指针，也就是说 Person.protytype.constructor 指向 Person 。**而通过这个构造函数，我们就可以继续为原型对象添加其他属性和方法。
+  **无论什么时候，只要创建了一个新函数，就会根据特定的规则为该函数创建一个 prototype 属性，这个属性的值（对象）就是函数的原型对象。在默认情况下，所有原型对象都会自动获得一个 constructor (构造函数)属性，这个属性是一个指向 prototype 属性所在的函数的指针，也就是说 Person.protytype.constructor 指向 Person 。** 而通过这个构造函数，我们就可以继续为原型对象添加其他属性和方法。
 
   ```js
   function Person () {}
@@ -3517,7 +3517,7 @@ console.log(person1.sayName === person2.sayName)   // true
 
   **创建了自定义的构造函数之后，其原型对象默认只会取得 constructor 属性，至于其他方法，都是从 Object 继承而来的。**
 
-  **当调用该构造函数创建一个新实例后，该实例的内部将包含一个指针（内部属性），指向构造函数的原型对象。**ES5 中管这个指针叫做 `[[Prototype]]` ，**虽然在脚本中没有标准的方式访问该指针，但 Firefox 、Safari 、Chrome 在每个对象上都支持一个属性 `__proto__` ，而在其他的实现中，则是不可见的。**
+  **当调用该构造函数创建一个新实例后，该实例的内部将包含一个指针（内部属性），指向构造函数的原型对象。** ES5 中管这个指针叫做 `[[Prototype]]` ， **虽然在脚本中没有标准的方式访问该指针，但 Firefox 、Safari 、Chrome 在每个对象上都支持一个属性 `__proto__` ，而在其他的实现中，则是不可见的。**
 
   要注意的一点就是：**这个连接存在于实例与构造函数的原型对象之间，而并非存在于实例与构造函数之间。**
 
@@ -3544,9 +3544,9 @@ console.log(person1.sayName === person2.sayName)   // true
 
   > 原型（Person.prototype）开始创建的最初只包含 contructor 属性，该属性也是共享的，所以可以通过对象实例访问。
 
-  虽然我们可以在实例中访问原型对象中的值，但却不能通过对象实例重写原型中的值（但我们可以直接修改原型对象的属性，比如通过 __proto__ 或者 setPrototypeOf()）。如果一个实例具有与原型对象相同的属性，读取的时候，会忽略原型对象里面的属性值，这个从查找机制就能看出来。
+  虽然我们可以在实例中访问原型对象中的值，但却不能通过对象实例重写原型中的值（但我们可以直接修改原型对象的属性，比如通过 `__proto__` 或者 `setPrototypeOf()`。如果一个实例具有与原型对象相同的属性，读取的时候，会忽略原型对象里面的属性值，这个从查找机制就能看出来。
 
-  当为一个对象添加一个属性时，这个属性会屏蔽原型对象中保存的同名属性，也就是说，添加这个属性会阻止我们访问原型中的那个属性，但不会修改那个属性。即使把新添属性值设为 null，也只会在实例中设置，我们依然无法访问原型对象中的同名属性（强制 __proto__ 这种不算）。我们可以使用 `delete 操作符`完全删掉该属性，从而让我们可以访问到原型对象中的同名属性。
+  当为一个对象添加一个属性时，这个属性会屏蔽原型对象中保存的同名属性，也就是说，添加这个属性会阻止我们访问原型中的那个属性，但不会修改那个属性。即使把新添属性值设为 null，也只会在实例中设置，我们依然无法访问原型对象中的同名属性（强制 `__proto__` 这种不算）。我们可以使用 `delete 操作符`完全删掉该属性，从而让我们可以访问到原型对象中的同名属性。
   
   ```js
   function Person () {}
@@ -3578,7 +3578,7 @@ console.log(person1.sayName === person2.sayName)   // true
   person1.hasOwnProperty('name')   // true
   ```
 
-  ES5 中，获取对象某个属性的描述符特性的方法 Object.getOwnPropertyDescriptor() 方法只能用于实例属性，如果要取得原型属性的描述符，则必须在原型对象上调用。
+  ES5 中，获取对象某个属性的描述符特性的方法 `Object.getOwnPropertyDescriptor()` 方法只能用于实例属性，如果要取得原型属性的描述符，则必须在原型对象上调用。
 
   ```js
   const person1 = new Person()
@@ -3629,3 +3629,293 @@ console.log(person1.sayName === person2.sayName)   // true
   hasPrototypeProperty(person1, 'name')   // false 因为在实例中定义了属性 name
   hasPrototypeProperty(person2, 'name')   // true 在实例中没有 name 属性，但在原型中有
   ```
+
+  `for-in` 在使用的时候，返回的是所有能够通过对象访问（ **包括其原型上的** ） **且可枚举** 的属性。与原型中不可枚举的属性（即 `[[Enumerable]]` 为 `false` 的属性）同名的属性也会被返回。
+
+  > ES5 将 `constructor` 和 `prototype` 属性的 `[[Enumerable]]` 特性设置为 `false` ，但并不是所有浏览器都这么实现。
+
+  除了 `for-in` 我们也可以使用 ES5 的 `Object.keys()` 方法。该方法接收一个对象作为参数，返回该对象所 **有可枚举属性** （ **不包括其原型对象上的** ）的字符串数组。
+
+  获取实例上（ **不包括其原型对象上的** ） **所有属性，无论是否可枚举，** 可以使用 Object.getOwnPropertyNames() 方法。
+
+  接下来，我们通过例子来实际比较一下 `for-in`、`Object.keys()` 和 `Object.getOwnPropertyNames()` :
+
+  ```js
+  function Person () {}
+
+  Person.prototype.name = 'xiaohua'
+  Person.prototype.age = 12
+  Person.prototype.job = 'student'
+  Person.prototype.sayName = function () {
+    console.log(this.name)
+  }
+  const person1 = new Person()
+  person1.sex = 'female'
+
+  // for-in 可以拿到实例及原型上的所有可枚举的属性
+  let forinArr = []
+  for (item in person1) {
+    forinArr.push(item)
+  }
+  console.log(forinArr.join())   // 'sex,name,age,job,sayName'
+
+  // Object.keys() 只能拿到实例上可枚举的属性
+  console.log(Object.keys(person1).join())   // 'sex'
+
+  // Object.getOwnPropertyNames() 可以拿到实例上所有可枚举的属性
+  console.log(Object.getOwnPropertyNames(person1).join())   // 'sex'
+  console.log(Object.getOwnPropertyNames(Person.prototype).join())   // 'constructor,name,age,job,sayName'
+  ```
+
+- **更简单的原型语法**
+
+  为减少不必要的代码及视觉没关，更常用的一种设置原型的方法是用一个包含所有属性和方法的对象字面量来重写整个原型对象。
+
+  ```js
+  function Person () {}
+
+  // 因为我们重写了 prototype ，当我们再实例化对象的时候，实例化对象的 constructor 就不再指向 Person 了，而是直接指向了 Object ，尽管使用 instanceof 操作符还能返回正确的结果。
+  // 这是因为 Person.prototype 里面已经没有了 constructor 属性，所以当访问的时候，是继续查找 Person.prototype 的原型对象，找到了 Object()
+  Person.prototype = {
+    name: 'xiaohua',
+    age: 12,
+    job: 'student',
+    sayName: function () {
+      console.log(this.name)
+    }
+  }
+
+  const person1 = new Person()
+
+  console.log(Person.prototype)   // {name: "xiaohua", age: 12, job: "student", sayName: ƒ}
+  console.log(person1.contructor)   // Object()
+
+  person1 instanceof Object   // true
+  person1 instanceof Person   // true
+  person1.constructor === Person   // false
+  person1.constructor === Object   // true
+  ```
+
+  所以如果我们需要 constructor 指向正确，就必须手动设置：
+
+  ```js
+  Person.prototype = {
+    constructor: Person,
+    name: 'xiaohua',
+    age: 12,
+    job: 'student',
+    sayName: function () {
+      console.log(this.name)
+    }
+  }
+  ```
+
+  但是这样设置，会将 `constructor` 的 `[[Enumerable]]` 特性设置为 `true` 。如果我们想更严谨一点设置，需要使用 `Object.defineProperty()` 方法 ：
+
+  ```js
+  function Person () {}
+
+  Person.prototype = {
+    name: 'xiaohua',
+    age: 12,
+    job: 'student',
+    sayName: function () {
+      console.log(this.name)
+    }
+  }
+
+  Object.defineProperty(Person.prototype, 'contrustor', {
+    enumerable: false,
+    value: Person
+  })
+  ```
+
+- **原型的动态性**
+
+  由于每次在原型中查找值的过程都是一次搜索的过程，因为我们对原型对象所做的任何修改都能够立即从实例上反映出来，及时先创建实例再修改原型也可以。
+
+  ```js
+  const person1 = new Person()
+  Person.prototype.sayHi = function () {
+    console.log('hi')
+  }
+  person1.sayHi()   // 'hi' 一样可以执行
+  ```
+
+  这是因为在搜索 sayHi() 方法的时候，本身实例上并没有，所以去搜索原型，而实例与原型之间的链接只是个指针。
+
+  如果我们重写了整个原型，那就不一样了，因为原型也是个对象，重写之后相当于重新开辟了内存空间，与原来的指针指向的地址并不一样了。当我们实例化在前的时候，保存的指针并不是后面重新开辟的内存空间的指针，所以就找不到了。
+
+  ```js
+  // 实例化在前
+  const person1 = new Person()
+  // 重写原型在后
+  Person.prototype = {
+    constructor: Person,
+    name: 'xiaohua',
+    age: 12,
+    job: 'student',
+    sayName: function () {
+      console.log(this.name)
+    }
+  }
+  person1.sayName()   // 找不到该方法，报错
+  ```
+
+  下图很好的反映了这一点：
+
+  ![](https://yinmu.me/docs/images/js_1584452923189.jpeg)
+
+- **原生对象的原型**
+
+  所有原生引用类型（`Array`、`Object`、`String` 等）都在其构造函数的原型上定义了方法，如 `Array.prototype.sort()` 、`String.prototype.substring()` 等。
+
+  所以我们可以通过原生对象的原型来扩展或改写其方法。
+
+  > 但直接重写原生引用类型的构造函数的方法是不推荐的，容易与别人的代码引起冲突，健壮性并不强。
+
+- **原型对象的缺点**
+
+  首先，它省略了为构造函数传递初始化参数这一环节，使得所有实例在默认情况下都取得相同的属性值。
+
+  其次，因为原型中的属性都是所有实例共享的，如果某个属性的值为引用类型，当一个实例修改了，那其他所有实例都会被修改。
+
+  ```js
+  function Person () {}
+
+  Person.prototype = {
+    name: 'xiaohua',
+    age: 12,
+    job: 'student',
+    friends: ['xiaoming', 'xiaojuan'],   // 注意这一行
+    sayName: function () {
+      console.log(this.name)
+    }
+  }
+
+  const person1 = new Person()
+  const person2 = new Person()
+
+  person1.friends.push('xiaomin')
+
+  console.log(person1.friends)   // ["xiaoming", "xiaojuan", "xiaomin"]
+  console.log(person2.friends)   // ["xiaoming", "xiaojuan", "xiaomin"] 它的原型上的属性值也发生了变化
+  ```
+
+  这也是很少有人单独使用原型模式的原因所在。
+
+4. **组合使用构造函数模式和原型模式**
+
+  这是创建自定义类型的最常见、使用最广泛、认同度最高的方式。
+
+  构造函数模式用来定义每个实例可自有的属性，原型模式用来定义方法和共享的属性。这样做，每个实例都会有自己的一份实例属性的副本，又能共享方法和某些属性，最大限度的节省了内存，同时还支持向构造函数传参，集合了两种模式（构造函数模式和原型模式）的长处。
+
+  ```js
+  // 定义实例可自有的属性
+  function Person (name, age, job) {
+    this.name = name
+    this.age = age
+    this.job = job
+  }
+  // 定义共享方法
+  Person.prototype = {
+    constructor: Person,
+    sayName: function () {
+      console.log(this.name)
+    }
+  }
+  ```
+
+5. **动态原型模式**
+
+  其他 OO 语言开发者，可能会对于独立的构造函数和原型比较困惑，动态原型模式将所有信息都封装在了构造函数中，在构造函数中初始化原型。也就是说，通过检查某个应该存在的方法是否存在，来决定是否需要初始化原型。
+
+  ```js
+  function Person (name, age, job) {
+    this.name = name
+    this.age = age
+    this.job = job
+
+    // 注意这个判断，只要判断一个就行了，因为一个有了，说明已经被添加到原型上了，就无需再添加了
+    if (typeof this.sayName !== 'function') {
+      Person.prototype.sayName = function () {
+        console.log(this.name)
+      }
+      Person.prototype.sayHi = unction () {
+        console.log('hi')
+      }
+    }
+  }
+  ```
+
+  > 使用这种模式，不能使用对象字面量重写原型。原因跟构造函数模式弊端一样，如果在已经创建了实例的情况下重写原型，会切断现有实例与新原型之间的联系。
+
+6. **寄生构造函数模式**
+
+  这种模式的基本思想是创建一个函数，该函数的作用仅仅是封装创建对象的代码，然后再返回新创建的对象。
+
+  ```js
+  function Person (name, age, job) {
+    const o = new Object()
+    o.name = name
+    o.age = age
+    o.job = job
+    o.sayName = function () {
+      console.log(this.name)
+    }
+    return o
+  }
+  ```
+
+  除了使用 new 操作符并把使用的包装函数叫做构造函数之外，该模式与工厂模式其实一模一样！
+
+  构造函数在不返回值的情况下，默认会返回新对象实例。而通过在构造函数的末尾添加 return 语句，可以在调用构造函数的时候重写返回的值。
+
+  这个模式可以在某些不能直接修改构造函数的时候，来额创建另一个构造函数并添加一些方法。
+
+  ```js
+  function SpecialArray () {
+    const values = new Array()
+    values.push.apply(values, arguments)
+    values.toPipedString = function () {
+      return this.join('|')
+    }
+    return values
+  }
+
+  const colors = new SpecialArray('red', 'blue', 'yellow')
+  colors.toPipedString()   // 'red|blue|yellow'
+  ```
+
+  > 关于寄生构造函数模式，需要明确的是：返回的对象与构造函数或者说与构造函数的原型之间没有任何关系，也就是说，构造函数返回的对象与在其外部创建的对象没有什么不同。因此不能依赖 instanceof 来确定对象类型。在能使用其他模式的情况下，不建议使用该模式。
+
+7. **稳妥构造函数模式**
+
+  这个更不常用，可以忽略。
+
+  稳妥对象，指的就是没有公共属性，而且其方法也不引用 this 的对象。适合在一些安全的环境中（禁止使用 this 和 new）或者放置数据被其他应用程序改动时使用。
+
+  它与寄生构造函数模式类似，只是有两点不同：一是新创建对象的实例方法不引用 this；二是不使用 new 操作符调用构造函数。
+
+  ```js
+  function Person (name, age, job) {
+    const o = new Object()
+    // 此处可以定义私有变量和函数
+    // 添加方法
+    o.sayName = function () {
+      console.log(name)
+    }
+    return o
+  }
+
+  const person1 = Person('xiaohua', 12, 'student')
+  ```
+
+  > 与寄生构造函数模式一样，该模式创建的对象与构造函数之间也没有什么关系，因此 instanceof 操作符也没有意义。
+
+### 继承
+
+在 OO 语言中，继承有两种：接口继承和实现继承。接口继承只继承方法签名，实现继承则继承实际的方法。在 ECMAScript 中，由于函数没有签名，所以无法实现接口继承，只支持实现继承，而且实现继承主要是依靠原型链来实现的。
+
+1. **原型链**
+
