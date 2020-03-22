@@ -3477,6 +3477,8 @@ console.log(xiaohua instanceof Object)   // true
 
 3. **原型模式**
 
+**总结归纳：每个构造函数上都会有一个 `prototype` 属性，每个实例上会有一个 `[[prototype]]`（因其是不可访问的，多数浏览器将其实现为 `__proto__`），这两个玩意是完全相等的！！！**
+
 我们创建的 **每个函数(并非对象)** 都有一个 `prototype`（原型）属性，这个属性是一个指针，指向一个对象，而这个对象的用途是包含可以由特定类型的所有实例共享的属性和方法。也就是说，prototype 就是通过调用构造函数而创建的那个实例对象的原型对象。
 
 使用原型模式的好处是可以让所有的对象实例共享它们包含的属性和方法，也就是说，不必在构造函数中定义对象实例的信息，而是可以将这些信息直接添加到原型对象中。
@@ -3919,3 +3921,321 @@ console.log(person1.sayName === person2.sayName)   // true
 
 1. **原型链**
 
+ECMAScript 中描述了原型链的概念，并将原型链作为实现继承的主要方法。其基本原理就是利用原型让一个引用类型继承另一个引用类型的属性和方法。
+
+我们先来回顾一下构造函数、原型和实例之间的关系：每一个构造函数都有一个原型对象 `prototype`，原型对象中都包含一个指向构造函数的指针 `constructor`，而每个实例都包含一个指向原型对象的内部指针 `[[prototype]]` (主流浏览器将其实现为 `__proto__` )。
+
+如果我们把一个引用类型的原型对象等于另一个引用类型的实例，那么此时的原型对象将包含一个指向另一个原型的指针，相应的，另一个原型中也包含着一个指向另一个构造函数的指针，假如另一个原型又是另一个类型的实例，以此层层递进，就构成了实例与原型的链条，也就是原型链。
+
+实现原型链的一种基本模式：
+
+```js
+function SuperType () {
+  this.superFlag = true
+}
+SuperType.prototype.getSuperValue = function () {
+  return this.flag
+}
+
+function SubType () {
+  this.subFlag = false
+}
+
+// 实现继承 SuperType ，将其原型赋值为 SuperType 的实例
+SubType.prototype = new SuperType()
+
+SubType.prototype.getSubValue = function () {
+  return this.subFlag
+}
+
+const instance = new SubType()
+instance.getSuperValue   // true
+```
+
+该例子的核心也就在于原本存在于 SuperType 的实例中的所有属性和方法，通过赋值给 SubType 的原型，使得所有 SubType 的实例上的原型对象上也拥有了 SuperType 的实例中的所有属性和方法。
+
+例子中的实例以及构造函数和原型之间的关系如下图：
+
+![](https://yinmu.me/docs/images/js_1584859315020.jpeg)
+
+其实原型链的本质就是扩展了原型的搜索机制。拿上面的例子来说，调用 instance.getSuperValue() 会经历三个搜索步骤：
+
+1）搜索实例，发现没有，继续搜索实例的原型
+
+2）实例的原型为 SuperType 的实例，在此搜索，发现还没有，继续搜索该实例的原型
+
+3）搜索到 SuperType.prototype ，找到，停止搜索
+
+在找不到属性或方法的情况下，搜索过程会一直向上攀爬，直到搜索到原型链的末端才会停下。
+
+拓展：
+
+- **别忘记默认的原型**
+
+  注意，**所有函数的默认原型都是 Object 的实例。** 所以默认原型都包含一个指针，指向 `Object.prototype` 。这也是所有自定义类型都会继承 `toString()` 、 `valueOf()` 等方法的原因。
+
+  对于上面的例子，完整的原型链如下图：
+
+  ![](https://yinmu.me/docs/images/js_1584862120670.jpeg)
+
+- **确定原型和实例的关系**
+
+  可以通过两种方式来确定原型和实例之间的关系。一种是使用 instanceof 操作符，另一种是使用 isPrototypeOf() 方法。这两个方法对于只要在原型链中存在的，都会返回 true 。
+
+  接上面的例子：
+
+  ```js
+  instance instanceof Object   // true
+  instance instanceof SuperType   // true
+  instance instanceof SubType   // true
+
+  Object.prototype.isPrototypeOf(instance)   // true
+  SuperType.prototype.isPrototypeOf(instance)   // true
+  SubType.prototype.isPrototypeOf(instance)   // true
+  ```
+
+- **谨慎地定义方法**
+
+  子类型有时候需要覆盖超类型里面的方法，或者要添加超类型中不存在的方法，这个时候要注意，给原型添加方法的代码一定要放在替换原型的语句之后。
+
+  还有一点需要注意的就是，在通过原型链实现继承时，不能使用对象字面量创建原型方法，因为这样会重写原型链。
+
+- **原型链的问题**
+
+  确实原型链的问题跟原型的问题很相似：一是对于原型中的引用类型，所有实例都共享，修改一个，其他都会修改；二是在创建子类型实例的时候，无法向超类型实例的构造函数中传递参数，也就是说没法在不影响所有对象实例的情况下，给超类型的构造函数传递参数。
+
+  因此，在实际代码中很少会单独使用原型链。
+
+2. **借用构造函数**
+
+该方式也被称作伪造对象或经典继承。
+
+实现原理就是在子类型构造函数内部调用超类型构造函数，这就需要借助我们用来改变 this 指向的 apply() 和 call() 方法了。
+
+```js
+function SuperType () {
+  this.colors = ['red', 'blue', 'green']
+}
+
+// 在子类型中调用超类的构造函数
+function SubType () {
+  SuperType.call(this)
+}
+
+const instance1 = new SubType()
+instance1.colors.push('black')
+console.log(instance1.colors)   // ['red', 'blue', 'green', 'black']
+
+const instance2 = new SubType()
+console.log(instance2.colors)   // ['red', 'blue', 'green']
+```
+
+可以从代码中看到，我们在每次创建实例的环境下调用了超类的构造函数，这样一来，会在新的 SubType 对象上执行 SuperType() 函数中定义的所有对象初始化代码，就导致 SubType 的每个实例度具有了自己的 colors 属性。其实就是改变了继承超类时的 this 指向，使每次执行超类构造函数的时候，都实例化到了当前子类的实例上。
+
+拓展：
+
+- **传递参数**
+
+  借用构造函数的好处就是可以在子类型构造函数中向超类型构造函数传递参数，当然，我们可以在构建实例的时候将参数传递。
+
+  ```js
+  function SuperType (name) {
+    this.name = name
+  }
+
+  function SubType () {
+    SuperType.call(this, 'xiaohua')
+    
+    this.age = 12
+  }
+
+  const instance = new SubType()
+  instance.name   // 'xiaohua'
+  instance.age   // 12
+  ```
+
+- **借用构造函数的问题**
+
+  如果仅仅使用构造函数，也无法避免方法都在构造函数中定义函数无法复用的问题。而且在超类型中的原型中定义的方法，对子类型是不可见的。
+
+  因此，在实际代码中很少会单独使用借用构造函数模式。
+
+3. **组合继承**
+
+该方式也被称作伪经典继承，是 JavaScript 中最常用的继承模式。
+
+实现原理就是将原型链和借用构造函数的模式组合到一起，使用原型链来实现对原型属性和方法的继承，而通过借用构造函数来实现对实例属性的继承。
+
+```js
+function SuperType (name) {
+  this.name = name
+  this.colors = ['red', 'blue', 'green']
+}
+SuperType.prototype.sayName = function () {
+  console.log(this.name)
+}
+
+function SubType (name, age) {
+  // 继承属性
+  SuperType.call(this, name)
+  this.age = age
+}
+// 继承方法
+SubType.prototype = new SuperType()
+SubType.prototype.constructor = SubType
+SubType.prototype.sayAge = function () {
+  console.log(this.age)
+}
+
+const instance1 = new SubType('xiaohua', 12)
+instance1.colors.push('black')
+console.log(instance1.colors)   // ['red', 'blue', 'green', 'black']
+instance1.sayName()   // 'xiaohua'
+instance1.sayAge()   // 12
+
+const instance2 = new SubType('xiaoqiang', 13)
+console.log(instance2.colors)   // ['red', 'blue', 'green']
+instance2.sayName()   // 'xiaoqiang'
+instance2.sayAge()   // 13
+```
+
+4. **原型式继承**
+
+ECMAScript5 新增了 `Object.create()` 方法规范化了原型继承。该方法接收两个参数，第一个是用作新对象原型的对象，第二个是为新对象定义额外属性的对象（可选）。
+
+在只传入一个参数的情况时，`Object.create()` 等价于下面这个方法：
+
+```js
+function obj(o) {
+  function F() {}
+  F.prototype = o
+  return new F()
+}
+```
+
+我们使用此方法来实现原型式继承：
+
+```js
+const person = {
+  name: 'xiaohua',
+  friends: ['xiaoqiang', 'xiaowang', 'xiaozhang']
+}
+
+const anotherPerson = Object.create(person)
+anotherPerson.name = 'xiaoli'
+anotherPerson.friends.push('xiaozhao')
+
+const yetAnotherPerson = Object.create(person)
+yetAnotherPerson.name = 'xiaozhou'
+yetAnotherPerson.friends.push('xiaowu')
+
+person.friends   // ['xiaoqiang', 'xiaowang', 'xiaozhang', 'xiaozhao', 'xiaowu']
+```
+
+`Object.create()` 方法的第二个参数与 `Object.defineProperties()` 方法的第二个参数格式相同：每个属性都是通过自己的描述符定义的。以这种方式指定的任何属性都会覆盖原型对象上的同名属性。
+
+> 支持 Object.create() 方法的浏览器有：IE9+ 、Firefox 4+ 、Safari 5+ 、Opera 12+ 、Chrome 。
+
+在只想让一个对象与另外一共对象类似的情况下，没必要创建构造函数，此时原型式继承是完全可以胜任的。不过要注意，包含引用类型的属性始终会共享相应的值。
+
+5. **寄生式继承**
+
+寄生式继承的实现原理与寄生构造函数和工厂模式类似，即创建一个仅用于封装继承过程的函数。
+
+```js
+function createAnother(o) {
+  let clone = Object.create(o)
+  clone.sayHi = function () {
+    console.log('hi')
+  }
+  return clone
+}
+```
+
+在主要考虑对象而不是自定义类型和构造函数的情况下，寄生式继承也是有用的。但该模式跟构造函数模式类似，无法做到函数复用而导致效率降低。
+
+6. **寄生组合式继承**
+
+组合式继承最大的问题就是无论在什么情况下，都会调用两次超类型构造函数：一次在创建子类型原型的时候，另一次是在子类型构造函数内部。
+
+```js
+function SuperType (name) {
+  this.name = name
+  this.colors = ['red', 'blue', 'green']
+}
+SuperType.prototype.sayName = function () {
+  console.log(this.name)
+}
+
+function SubType (name, age) {
+  // 继承属性
+  SuperType.call(this, name)   // 第二次调用 SuperType()
+  this.age = age
+}
+// 继承方法
+SubType.prototype = new SuperType()   // 第一次调用 SuperType()
+SubType.prototype.constructor = SubType
+SubType.prototype.sayAge = function () {
+  console.log(this.age)
+}
+```
+
+分析上面的代码，在第一次调用 SuperType 构造函数的时候，SubType.prototype 会得到两个属性：name 和 colors，它们都是 SuperType 的实例属性，只不过现在位于 SubType 的原型中。当调用 SubType 构造函数的时候，又一次调用了 SuperType 的构造函数，这一次又在新对象上创建了实例属性 name 和 colors。于是这两个属性就屏蔽了原型中的两个同名属性。其实 SubType.prototype 中的那俩属性完全是多余的。
+
+寄生组合模式很好的解决了这个弊端，它通过借用构造函数来继承属性，通过原型链的混成形式来继承方法。其背后思路是：不必为了指定子类型的原型而调用超类型的构造函数，我们所需要的无非就是超类型原型的一个副本而已。本质上，是使用寄生式继承来继承超类型的原型，然后再将结果指定给子类型的原型。
+
+```js
+function inheritPrototype(subType, superType) {
+  const prototype = Object.create(superType.prototype)   // 创建对象
+  prototype.constructor = subType   // 增强对象
+  subType.prototype = prototype   // 指定对象
+}
+```
+
+于是，我们可以改写之前的代码：
+
+```js
+function SuperType (name) {
+  this.name = name
+  this.colors = ['red', 'blue', 'green']
+}
+SuperType.prototype.sayName = function () {
+  console.log(this.name)
+}
+
+function SubType (name, age) {
+  // 继承属性
+  SuperType.call(this, name)   // 第二次调用 SuperType()
+  this.age = age
+}
+// 继承方法
+inheritPrototype(SubType, SuperType)
+
+SubType.prototype.sayAge = function () {
+  console.log(this.age)
+}
+```
+
+对于上面的代码，完整的示意过程如下图：
+
+![](https://yinmu.me/docs/images/js_1584871156055.jpeg)
+
+该例子中只调用了一次 SuperType 构造函数，避免了在 SubType.prototype 上面创建不必要的多余属性。
+
+**寄生组合式继承时引用类型最理想的继承模式。**
+
+## 第 7 章：函数表达式
+
+定义函数的方式有两种：一种是函数声明，另一种是函数表达式。
+
+函数声明语法：
+
+```js
+function functionName (arg0, arg1, arg2, ...args) {
+  // 函数体
+}
+```
+
+function 是关键字，后面跟函数名。Firefox 、Safari 、Chrome 和 Opera 都给函数定义了一个非标准的 name 属性，通过这个属性可以访问到函数的名字，该属性的值永远等于跟在 function 关键字后面的标识符。
+
+函数声明有一个重要的特征就是 **函数声明提升** ，在执行代码前会先读取函数声明，所以可以把函数声明放在调用它的语句后面。
