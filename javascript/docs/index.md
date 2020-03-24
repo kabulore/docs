@@ -4228,7 +4228,9 @@ SubType.prototype.sayAge = function () {
 
 定义函数的方式有两种：一种是函数声明，另一种是函数表达式。
 
-函数声明语法：
+**函数声明**
+
+语法：
 
 ```js
 function functionName (arg0, arg1, arg2, ...args) {
@@ -4239,3 +4241,298 @@ function functionName (arg0, arg1, arg2, ...args) {
 function 是关键字，后面跟函数名。Firefox 、Safari 、Chrome 和 Opera 都给函数定义了一个非标准的 name 属性，通过这个属性可以访问到函数的名字，该属性的值永远等于跟在 function 关键字后面的标识符。
 
 函数声明有一个重要的特征就是 **函数声明提升** ，在执行代码前会先读取函数声明，所以可以把函数声明放在调用它的语句后面。
+
+**函数表达式**
+
+语法：
+
+```js
+const functionName = function (arg0, arg1, arg2, ...args) {
+  // 函数体
+}
+```
+
+这种方式就是创建一个函数并将它赋值给变量，这种情况下创建的函数也叫做匿名函数或拉姆达函数。匿名函数的 name 属性是空字符串。
+
+**函数表达式与其他表达式一样，在使用前必须赋值，不存在函数声明提升！**
+
+### 递归
+
+递归函数是在一个函数中通过名字调用自身而形成的。
+
+```js
+// 阶乘函数
+function factorial (num) {
+  if (num <= 1) {
+    return 1
+  } else {
+    return num * factorial(num - 1)
+  }
+}
+```
+
+有时候，为了防止函数名被修改，而内部递归调用无法再访问到该函数，我们可以使用 `arguments.callee` 指向正在执行的函数的指针来获取当前函数。但 `arguments.callee` 在严格模式下会报错。
+
+```js
+function factorial (num) {
+  if (num <= 1) {
+    return 1
+  } else {
+    return num * arguments.callee(num - 1)
+  }
+}
+```
+
+我们可以使用匿名函数表达式，来实现一样的效果：
+
+```js
+const factorial = (function f (num) {
+  if (num <= 1) {
+    return 1
+  } else {
+    return num * f(num - 1)
+  }
+})
+```
+
+### 闭包
+
+闭包是指有权访问另一个函数作用域中变量的函数。
+
+创建闭包的常见方式就是在一个函数内部创建另一个函数。
+
+```js
+function createComparisonFunction (propertyName) {
+  return function (object1, object2) {
+    const value1 = object1[propertyName]
+    const value2 = object2[propertyName]
+
+    if (value1 < value2) {
+      return -1
+    } else if (value1 > value2) {
+      return 1
+    } else {
+      return 0
+    }
+  }
+}
+```
+
+上例中，我们就创建了一个闭包，虽然这个内部匿名函数被返回了，但是在其他地方调用的时候，依然可以访问到 propertyName 。
+
+要理解闭包，必须先理解作用域链：当某个函数被调用的时候，会创建一个执行环境及相应的作用域链。然后使用 arguments 和其他命名参数的值来初始化函数的活动对象。但在作用域链中，外部函数的活动对象始终处于第二位，外部函数的外部函数的活动对象处于第三位，……直至作为作用域链终点的全局执行环境。
+
+在函数的执行过程中，为读取和写入变量的值，需要在作用域链中查找变量。
+
+```js
+function compare (value1, value2) {
+  if (value1 < value2) {
+    return -1
+  } else if (value1 > value2) {
+    return 1
+  } else {
+    return 0
+  }
+}
+
+const res = compare(5, 10)
+```
+
+上例中，我们先定义了 compare() 函数，然后又在全局作用域中调用了它。当调用 compare() 时，会创建一个包含 arguments 、value1 和 value2 的活动对象。全局执行环境的变量对象（包含 res 和 compare）在 compare() 执行环境的作用域链中则处于第二位。如下图所示：
+
+![](https://yinmu.me/docs/images/js_1584943691771.jpeg)
+
+后台的每个执行环境都有一个表示变量的对象 —— 变量对象。全局环境的变量对象始终存在，而像 compare() 函数这样的局部环境的变量对象，则只在函数执行的过程中存在。
+
+在创建 compare() 函数时，会创建一个预先包含全局变量对象的作用域链，这个作用域链被保存在内部的 `[[Scope]]` 属性中。当调用 compare() 函数时，会为函数创建一个执行环境，然后通过复制函数的 `[[Scope]]` 属性中的对象，构建起执行环境的作用域链。接着，又创建了该函数的本地活动对象（变量对象）并推入执行环境作用域链的顶端。对于上例而言，其作用域链包含两个变量对象：本地活动对象和全局变量对象。作用域链本质上是一个指向变量对象的指针列表，只是引用但不包含实际变量对象。
+
+无论什么时候在函数中访问一个变量时，就会从作用域链中搜索具有相应名字的变量。一般来讲，当函数执行完毕后，局部活动对象会被销毁，内存中仅保存全局作用域（全局执行环境的变量对象）。但闭包不是这样，在另一个函数内部定义的函数会将外部函数的活动对象添加到它的作用域链中，知道它内部的闭包函数被销毁，否则该外部函数的活动对象会一直存在于内存中。
+
+由于闭包会携带包含它的函数的作用域，因此会比其他函数占用更多的内存。
+
+1. **闭包与变量**
+
+作用域链的这种机制引出了一个副作用，即闭包只能取得外部包含函数的任意变量的最后一个值。
+
+```js
+function createFunctions () {
+  let result = []
+  for(let i = 0; i < 10; i++) {
+    result[i] = funtion () {
+      return i
+    }
+  }
+  return result
+}
+```
+
+从代码中我们可以知道这个函数会返回一个函数数组，表面上看，每个函数都应该返回自己的索引值，但实际上，每个函数返回的都是 10 。这是因为每个函数的作用域链中都保存着 createFunctions() 函数的活动对象，所以每个引用都是同一个变量 i 。当 createFunctions 执行 return 之后，变量 i 的值是 10 ，因此每个闭包函数内部的 i 也自然是 10 。其实理解一点就是这个 i 的值并不是在函数内部存储的，只要访问外部的变量，就要看这个变量究竟变为了何值！
+
+我们可以通过创建另一个匿名函数强制让闭包行为符合预期，其实也就是将 i 传递为闭包函数自身的变量对象。
+
+```js
+function createFunctions () {
+  let result = []
+  for(let i = 0; i < 10; i++) {
+    result[i] = funtion (num) {
+      return function () {
+        return num
+      }
+    }(i)
+  }
+  return result
+}
+```
+
+2. **关于 this 对象**
+
+我们知道：在全局函数中，this 等于 window ，而当函数被作为某个对象的方法调用时，this 等于那个对象。不过，匿名函数的执行环境具有全局性，因此其 this 对象通常指向 window 。
+
+```js
+const name = 'The Window'
+
+const object = {
+  name: 'My Object',
+  getNameFunc: function () {
+    return function () {
+      return this.name
+    }
+  }
+}
+
+console.log(object.getNameFunc()())   // 'The Window'
+```
+
+这是为什么呢？每个函数在被调用的时候都会自动取得两个特殊变量：this 和 arguments 。内部函数在搜索这两个变量时，只会搜索到其活动对象为止。因此永远不可能直接访问外部函数的 this 和 arguments 。
+
+其实以我的理解，就是重点看要执行的函数是否需要依赖外部包含函数的变量。像上面这个例子，最终执行的其实就是一个匿名函数，而这个匿名函数跟外部包含函数没有任何关系，又是在全局作用域下执行的，所以自然就是这样的结果。
+
+3. **内存泄漏**
+
+由于 IE9 之前的版本对垃圾回收机制实现的缺陷性，导致如果闭包作用域链中保存着一个 HTML 元素，那么久无法将该元素销毁。其实这是一个公共的问题，我们在闭包中的变量，如果无用，可手动赋值为 null 将其销毁。
+
+### 模仿块级作用域
+
+由于 JavaScript 没有块级作用域的概念（ES6 已经有了！），所以在快语句中定义的变量，实际上是在包含函数中而非语句中创建的。
+
+```js
+function outputNumbers (count) {
+  for (var i = 0; i < count; i++) {
+    console.log(i)
+  }
+  var i   // 重新声明也不会报错
+  console.log(i)   // 依然可以访问到
+}
+```
+
+JavaScript 会对同一个变量重复的声明视而不见，只会使用第一个而忽略后面的声明（但是如果初始化变量，则会执行，比如上例中将 i 重新赋值）。
+
+可以用匿名函数来模仿块级作用域：
+
+```js
+// 这也是 jQuery 年代常用的办法
+(function () {
+  // 这里是块级作用域
+})()
+```
+
+### 私有变量
+
+JavaScript 中没有私有成员的概念，所有对象的属性都是公有的。但有私有变量的概念：任何在函数中定义的变量，都可以认为是私有变量，因为不能在函数的外部访问这些变量。私有变量包含函数的参数、局部变量和在函数内部定义的其他函数。而能访问私有变量和私有函数的公有方法，我们称之为特权方法。
+
+我们可以在构造函数中定义特权方法，基本模式如下：
+
+```js
+function MyObject () {
+  // 私有变量
+  var privateVariable = 10
+  // 私有函数
+  function privateFunction () {
+    return false
+  }
+  // 特权方法
+  this.publicMethod = function () {
+    privateVariable++
+    return privateFunction()
+  }
+}
+```
+
+这种定义特权函数的方法跟构造函数模式的弊端一样，会在每个实例上都重复定义方法，无法实现复用。
+
+1. **静态私有变量**
+
+通过在私有作用域中定义私有变量或函数，也可以创建特权方法。
+
+```js
+(function () {
+  // 私有变量
+  var privateVariable = 10
+  // 私有函数
+  function privateFunction () {
+    return false
+  }
+  // 构造函数
+  MyObject = function () {}
+  // 特权方法
+  MyObject.prototype.publicMethod = function () {
+    privateVariable++
+    return privateFunction()
+  }
+})()
+```
+
+公有方法是在原型上创建的，这一点体现了典型的原型模式。需要注意的是，定义没有经过初始化的变量，会创建一个全局变量，严格模式下会报错。
+
+静态私有变量模式虽然解决了构造函数模式的方法复用的问题，但是跟原型模式弊端一样，每个实例都没有自己的私有变量，而且多层查找作用域链，会导致查找速度变慢。
+
+2. **模块模式**
+
+模块模式是为单例创建私有变量和特权方法。单例就是说只有一个实例的对象（设计模式中的单例模式）。
+
+```js
+const singleton = function () {
+  // 私有变量
+  var privateVariable = 10
+  // 私有函数
+  function privateFunction () {
+    return false
+  }
+
+  return {
+    publicProperty: true,
+    publicMethod: function () {
+      privateVariable++
+      return privateFunction()
+    }
+  }
+}()
+```
+
+如果必须创建一个对象并以某些数据对其进行初始化，同时还要公开一些能够访问这些私有数据的方法，那么久可以使用模块模式。
+
+3. **增强的模块模式**
+
+这种模式适合那些单例必须是某种类型的实例，同时还必须添加某些属性活方法对其加以增强的情况。
+
+```js
+const singleton = function () {
+  // 私有变量
+  var privateVariable = 10
+  // 私有函数
+  function privateFunction () {
+    return false
+  }
+
+  // 创建对象
+  const object = new CustomType()
+  // 添加特权/公有属性和方法
+  object.publicProperty = true
+  object.publicMethod = function () {
+    privateVariable++
+    return privateFunction()
+  }
+  // 返回这个对象
+  return object
+}()
+```
