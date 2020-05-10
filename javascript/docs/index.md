@@ -3,7 +3,7 @@ sidebar: auto
 footer: MIT Licensed | Made with Yinmu
 ---
 
-# 《JavaScript 入门经典（第3版）》
+# 《JavaScript 高级程序设计（第3版）》
 
 > 作者：尼古拉斯·泽卡斯 Nicholas C.Zakas [美]
 
@@ -4536,3 +4536,40 @@ const singleton = function () {
   return object
 }()
 ```
+
+## 第 8 章：BOM
+
+### window 元素
+
+BOM（浏览器对象模型）的核心对象是 window，它表示一个浏览器的实例。在浏览器中，window 对象具有双重角色，既是通过 JavaScript 访问浏览器窗口的一个接口，又是 ECMAScript 规定的 Global 对象。
+
+1. **全局作用域**
+
+所有在全局作用域中声明的变量、函数都会变成 window 对象的属性和方法，都可以使用 `window.xxx` 的方式进行访问。
+
+注意：定义的全局变量和在 window 对象上直接定义的属性有一点差别：**全局变量不能通过 `delete` 操作符删除，而直接在 window 对象上定义的属性可以。** 这是因为声明的全局变量的特性 `[[Configurable]]` 值为 false 。
+
+```js
+var age = 29
+window.color = 'red'
+
+delete window.age   // 在 IE < 9 时抛出错误，在其他所有浏览器中都返回 false
+delete window.color   // 在 IE < 9 时抛出错误，在其他所有浏览器中返回 true
+
+console.log(window.age)   // 29
+console.log(window.color)   // undefined
+```
+
+尝试访问未声明的变量会抛出错误，但是通过查询 window 对象，可以知道某个可能未声明的变量是否存在：
+
+```js
+var newValue = oldValue   // 报错，oldValue 未声明
+
+var newValue = window.oldValue   // 不会报错，值为 undefined
+```
+
+> Window Mobile 平台的 IE 浏览器不允许通过 `window.x = xxx` 之类的形式在 window 对象上创建新的属性和方法。但是，在全局作用域中声明的所有变量和函数，一样会成为 window 对象的属性成员。
+
+2. **窗口关系及框架**
+
+如果页面中包含框架，则每个框架都拥有自己的 window 对象，并且保存在 frames 集合中。在 frames 集合中，可以通过数值索引（从 0 开始，从左至右，从上到下）或框架名称来访问相应的 window 对象。每个 window 对象都有一个 name 属性，其中包含框架的名称。
