@@ -2,15 +2,6 @@ module.exports = {
   base: '/docs/javascript/',
   dest: './dist/javascript',
   plugins: {
-    '@vuepress/pwa': {
-      serviceWorker: true,
-      updatePopup: {
-        '/': {
-          message: '发现新内容可用',
-          buttonText: '刷新',
-        }
-      }
-    },
     '@vuepress/back-to-top': true
   },
   locales: {
@@ -33,8 +24,12 @@ module.exports = {
         lastUpdated: '上次更新',
         nav: [
           {
-            text: 'Javascript',
+            text: 'Javascript 高级程序设计（第3版）',
             link: '/',
+          },
+          {
+            text: '你不知道的 Javascript',
+            link: '/unknown',
           }
         ]
       }
